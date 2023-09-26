@@ -1,0 +1,15 @@
+[package]
+name = "server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.4.0"
+toml = "0.8.0"
+serde = "1.0.188"
+serde_derive = {version = "1.0.188"}
+actix-session = {version ="0.8.0", features = ["redis-actor-session"]}
+diesel = { version = "2.1.2", features = ["postgres", "r2d2", "chrono", "uuid"] }
+chrono = { version = "0.4.31", features = ["serde"] }
+uuid = { version = "1.4.1", features = ["serde", "v4"] }
+bcrypt = "0.15.0"
