@@ -16,10 +16,17 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct NewUser {
+pub struct UserDetails {
     pub full_name: String,
     pub email: String,
     pub password: String,
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct CreateUser {
+    pub full_name: String,
+    pub email: String,
+    pub password: String,
 }

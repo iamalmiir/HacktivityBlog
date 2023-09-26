@@ -1,6 +1,6 @@
 use serde_derive::Serialize;
 
-use crate::models::user_model::{NewUser, User};
+use crate::models::user_model::{User, UserDetails};
 
 #[derive(Serialize)]
 pub struct GenericResponse {
@@ -12,7 +12,7 @@ pub struct GenericResponse {
 pub struct UserResponse {
     pub status: String,
     pub message: String,
-    pub user: NewUser,
+    pub user: UserDetails,
 }
 
 #[derive(Serialize, Debug)]
