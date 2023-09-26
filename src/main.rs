@@ -8,7 +8,7 @@ mod response;
 mod schema;
 mod services;
 mod utils;
-use services::user::create_user;
+use services::{auth::login, user::create_user};
 use utils::config::{initialize_db_pool, load_config};
 use utils::helpers::get_secret_key;
 
@@ -32,6 +32,7 @@ async fn main() -> std::io::Result<()> {
                 .build(),
             )
             .service(create_user)
+            .service(login)
     })
     .bind(("127.0.0.1", 8080))?
     .run()

@@ -27,12 +27,16 @@ pub fn add_user(
         full_name: new_user.full_name.to_owned(),
         email: new_user.email.to_owned(),
         password: new_user.password.to_owned(),
+        created_at: new_user.created_at,
+        updated_at: new_user.updated_at,
     })
 }
 
-pub fn find_user_by_email(conn: &mut PgConnection, _email: &str) -> Result<bool, DbError> {
+pub fn find_user_by_email(
+    conn: &mut PgConnection,
+    _email: &str,
+) -> Result<models::user_model::NewUser, DbError> {
     use crate::schema::users::dsl::*;
-
     // Use the `filter` method from the `FilterDsl` trait to create a query that filters by email
     let user_exists = users
         .filter(email.eq(_email)) // Compare the `email` column with the provided email
@@ -41,7 +45,16 @@ pub fn find_user_by_email(conn: &mut PgConnection, _email: &str) -> Result<bool,
         .optional()?; // Convert the result to an Option
 
     match user_exists {
-        Some(_) => Ok(true),
+        Some(_email) => {
+            let user: models::user_model::User = users.filter(email.eq(email)).first(conn)?;
+            Ok(NewUser {
+                full_name: user.full_name.to_owned(),
+                email: user.email.to_owned(),
+                password: user.password.to_owned(),
+                created_at: user.created_at,
+                updated_at: user.updated_at,
+            })
+        }
         None => Err(Box::new(diesel::result::Error::NotFound)),
     }
 }

@@ -30,7 +30,7 @@ async fn create_user(
             message: "User with this email already exists".to_string(),
         };
 
-        return Ok(HttpResponse::BadRequest().json(error_response));
+        return Ok(HttpResponse::InternalServerError().json(error_response));
     }
     // Create the user in the database
     let user_result = add_user(&mut conn, &new_user);

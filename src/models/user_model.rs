@@ -20,4 +20,6 @@ pub struct NewUser {
     pub full_name: String,
     pub email: String,
     pub password: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
 }
