@@ -2,13 +2,11 @@ use crate::{
     actors::user::{add_user, find_user_by_email},
     models::user_model::CreateUser,
     response::UserResponse,
-    utils::helpers::error_response,
+    utils::helpers::{error_response, DbPool},
 };
 use actix_web::{post, web, HttpResponse, Responder, Result};
-use diesel::{r2d2, PgConnection};
 use validator::Validate;
 
-type DbPool = r2d2::Pool<r2d2::ConnectionManager<PgConnection>>;
 /// @api {post} /api/v1/user/create Create a new user
 /// @apiName create_user
 /// @apiGroup User

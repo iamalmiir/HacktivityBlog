@@ -35,3 +35,11 @@ pub struct CreateUser {
     #[validate(length(min = 8))]
     pub password: String,
 }
+
+#[derive(Deserialize, Debug, Serialize, Clone, Validate)]
+pub struct LoginRequest {
+    #[validate(email)]
+    pub email: String,
+    #[validate(length(min = 8))]
+    pub password: String,
+}
