@@ -1,18 +1,24 @@
-use crate::models::user_model::{CreateUser, User, UserDetails};
 use bcrypt::{hash, DEFAULT_COST};
 use chrono::Utc;
 use diesel::prelude::*;
 
+use crate::models::user_model::{User, UserDetails};
+
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
-pub fn add_user(conn: &mut PgConnection, _user: &CreateUser) -> Result<UserDetails, DbError> {
+pub fn add_user(
+    conn: &mut PgConnection,
+    _full_name: &str,
+    _email: &str,
+    _password: &str,
+) -> Result<UserDetails, DbError> {
     use crate::schema::users::dsl::*;
     let current_time = Utc::now().naive_utc();
-    let hashed_password = hash(_user.password.as_bytes(), DEFAULT_COST)?;
+    let hashed_password = hash(_password.as_bytes(), DEFAULT_COST)?;
     let new_user = User {
         id: uuid::Uuid::new_v4(),
-        full_name: _user.full_name.to_owned(),
-        email: _user.email.to_owned(),
+        full_name: _full_name.to_owned(),
+        email: _email.to_owned(),
         password: hashed_password,
         created_at: current_time,
         updated_at: current_time,

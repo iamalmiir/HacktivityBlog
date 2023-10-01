@@ -1,13 +1,14 @@
-use crate::response::{GenericResponse, UserResponse};
 use crate::{
     actors::user::{add_user, find_user_by_email},
     models::user_model::CreateUser,
+    response::UserResponse,
+    utils::helpers::error_response,
 };
 use actix_web::{post, web, HttpResponse, Responder, Result};
 use diesel::{r2d2, PgConnection};
+use validator::Validate;
 
 type DbPool = r2d2::Pool<r2d2::ConnectionManager<PgConnection>>;
-
 /// @api {post} /api/v1/user/create Create a new user
 /// @apiName create_user
 /// @apiGroup User
@@ -21,34 +22,27 @@ async fn create_user(
     form: web::Json<CreateUser>,
 ) -> Result<impl Responder> {
     let mut conn = pool.get().unwrap();
-    let new_user: CreateUser = form.into_inner();
-    // Check if the user already exists in the database
-    if find_user_by_email(&mut conn, &new_user.email).is_ok() {
-        let error_response = GenericResponse {
-            status: "error".to_string(),
-            message: "User with this email already exists".to_string(),
-        };
-
-        return Ok(HttpResponse::InternalServerError().json(error_response));
-    }
-    // Create the user in the database
-    let user_result = add_user(&mut conn, &new_user);
-    match user_result {
-        Ok(user) => {
-            let json_response = UserResponse {
-                status: "success".to_string(),
-                message: "User created".to_string(),
-                user,
-            };
-            Ok(HttpResponse::Created().json(json_response))
+    let user: CreateUser = form.into_inner();
+    match user.validate() {
+        Ok(_) => {
+            // Check if the user already exists in the database
+            if find_user_by_email(&mut conn, &user.email).is_ok() {
+                return Ok(error_response("User with this email already exists"));
+            }
+            // Create the user in the database
+            let user_result = add_user(&mut conn, &user.full_name, &user.email, &user.password);
+            match user_result {
+                Ok(user) => {
+                    let json_response = UserResponse {
+                        status: "success".to_string(),
+                        message: "User created".to_string(),
+                        user,
+                    };
+                    Ok(HttpResponse::Created().json(json_response))
+                }
+                Err(_) => Ok(error_response("User creation failed")),
+            }
         }
-        Err(_) => {
-            let error_response = GenericResponse {
-                status: "error".to_string(),
-                message: "User creation failed".to_string(),
-            };
-
-            Ok(HttpResponse::BadRequest().json(error_response))
-        }
+        Err(_) => Ok(error_response("Validation failed")),
     }
 }

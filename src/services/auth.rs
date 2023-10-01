@@ -15,12 +15,11 @@ struct LoginRequest {
 #[post("/auth/login")]
 async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result<impl Responder> {
     let mut conn = pool.get().unwrap();
-    let req_data = form.into_inner();
-    let user_exists = find_user_by_email(&mut conn, &req_data.email);
+    let user_exists = find_user_by_email(&mut conn, &form.email);
 
     match user_exists {
         Ok(user) => {
-            if verify(&req_data.password, &user.password).unwrap() {
+            if verify(&form.password, &user.password).unwrap() {
                 Ok(HttpResponse::Ok().json(user))
             } else {
                 Err(actix_web::error::ErrorUnauthorized("Invalid password"))

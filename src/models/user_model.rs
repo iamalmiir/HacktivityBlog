@@ -3,6 +3,8 @@ use chrono::NaiveDateTime;
 use diesel::{Insertable, Queryable, Selectable};
 use serde_derive::{Deserialize, Serialize};
 use uuid::Uuid;
+use validator::Validate;
+// use validator_derive::Validate;
 
 #[derive(Debug, Serialize, Deserialize, Clone, Queryable, Selectable, Insertable)]
 #[diesel(table_name = users)]
@@ -24,9 +26,12 @@ pub struct UserDetails {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Validate)]
 pub struct CreateUser {
+    #[validate(length(min = 1))]
     pub full_name: String,
+    #[validate(email)]
     pub email: String,
+    #[validate(length(min = 8))]
     pub password: String,
 }
