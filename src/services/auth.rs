@@ -5,6 +5,7 @@ use crate::{
 };
 use actix_web::{post, web, HttpResponse, Responder, Result};
 use bcrypt::verify;
+use serde_json::json;
 use validator::Validate;
 
 #[post("/auth/login")]
@@ -18,7 +19,12 @@ async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result
                 Ok(user) => {
                     let passowrd_matches = verify(&login_req.password, &user.password).unwrap();
                     match passowrd_matches {
-                        true => Ok(HttpResponse::Ok().json(user)),
+                        true => Ok(HttpResponse::Ok().json(json!({
+                            "full_name": user.full_name,
+                            "created_at": user.created_at,
+                            "email": user.email,
+                            "updated_at": user.updated_at
+                        }))),
                         false => Ok(error_response("Invalid login credentials")),
                     }
                 }
