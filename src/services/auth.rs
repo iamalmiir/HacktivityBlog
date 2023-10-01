@@ -15,10 +15,13 @@ async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result
         Ok(_) => {
             let user_exists = find_user_by_email(&mut conn, &login_req.email);
             match user_exists {
-                Ok(user) => match verify(&login_req.password, &user.password) {
-                    Ok(_) => Ok(HttpResponse::Ok().json(user)),
-                    Err(_) => Ok(error_response("Invalid login credentials")),
-                },
+                Ok(user) => {
+                    let passowrd_matches = verify(&login_req.password, &user.password).unwrap();
+                    match passowrd_matches {
+                        true => Ok(HttpResponse::Ok().json(user)),
+                        false => Ok(error_response("Invalid password")),
+                    }
+                }
                 Err(_) => Ok(error_response("Invalid login credentials")),
             }
         }
