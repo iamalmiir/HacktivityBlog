@@ -21,8 +21,8 @@ async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result
                     match passowrd_matches {
                         true => Ok(HttpResponse::Ok().json(json!({
                             "full_name": user.full_name,
-                            "created_at": user.created_at,
                             "email": user.email,
+                            "created_at": user.created_at,
                             "updated_at": user.updated_at
                         }))),
                         false => Ok(error_response("Invalid login credentials")),
