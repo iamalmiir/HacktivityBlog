@@ -19,7 +19,7 @@ async fn login(pool: web::Data<DbPool>, form: web::Json<LoginRequest>) -> Result
                     let passowrd_matches = verify(&login_req.password, &user.password).unwrap();
                     match passowrd_matches {
                         true => Ok(HttpResponse::Ok().json(user)),
-                        false => Ok(error_response("Invalid password")),
+                        false => Ok(error_response("Invalid login credentials")),
                     }
                 }
                 Err(_) => Ok(error_response("Invalid login credentials")),
