@@ -37,24 +37,18 @@ pub fn add_user(
 
 pub fn find_user_by_email(conn: &mut PgConnection, _email: &str) -> Result<UserDetails, DbError> {
     use crate::schema::users::dsl::*;
-    // Use the `filter` method from the `FilterDsl` trait to create a query that filters by email
-    let user_exists = users
-        .filter(email.eq(_email)) // Compare the `email` column with the provided email
-        .select(email)
-        .first::<String>(conn) // Try to retrieve the email
-        .optional()?; // Convert the result to an Option
 
-    match user_exists {
-        Some(_) => {
-            let user: User = users.filter(email.eq(email)).first(conn)?;
-            Ok(UserDetails {
-                full_name: user.full_name.to_owned(),
-                email: user.email.to_owned(),
-                password: user.password.to_owned(),
-                created_at: user.created_at,
-                updated_at: user.updated_at,
-            })
-        }
-        None => Err(Box::new(diesel::result::Error::NotFound)),
+    // Attempt to find the user by email
+    match users.filter(email.eq(_email)).first::<User>(conn) {
+        Ok(user) => Ok(UserDetails {
+            full_name: user.full_name.to_owned(),
+            email: user.email.to_owned(),
+            password: user.password.to_owned(),
+            created_at: user.created_at,
+            updated_at: user.updated_at,
+        }),
+        // If the user doesn't exist, return a 404 error
+        Err(diesel::result::Error::NotFound) => Err(Box::new(diesel::result::Error::NotFound)),
+        Err(e) => Err(Box::new(e)), // Handle any other database error
     }
 }
