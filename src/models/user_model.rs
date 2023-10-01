@@ -25,6 +25,13 @@ pub struct UserDetails {
     pub created_at: NaiveDateTime,
     pub updated_at: NaiveDateTime,
 }
+#[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UserLoginData {
+    pub full_name: String,
+    pub email: String,
+    pub created_at: NaiveDateTime,
+    pub updated_at: NaiveDateTime,
+}
 
 #[derive(Debug, Serialize, Deserialize, Clone, Validate)]
 pub struct CreateUser {

@@ -1505,7 +1505,6 @@ dependencies = [
  "diesel",
  "serde",
  "serde_derive",
- "serde_json",
  "toml",
  "uuid",
  "validator",
