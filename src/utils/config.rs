@@ -1,3 +1,5 @@
+use actix_web::error::ErrorInternalServerError;
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
 use diesel::{r2d2, PgConnection};
 use std::fs::File;
 use std::io::Read;
@@ -12,12 +14,18 @@ pub fn load_config(filename: &str) -> Result<Value, Box<dyn std::error::Error>> 
     Ok(toml_value)
 }
 
-/// Initialize database connection pool based on `DATABASE_URL` environment variable.
-///
-/// See more: <https://docs.rs/diesel/latest/diesel/r2d2/index.html>.
-pub fn initialize_db_pool(conn_url: &str) -> DbPool {
-    let manager = r2d2::ConnectionManager::<PgConnection>::new(conn_url);
-    r2d2::Pool::builder()
+pub fn establish_connection(database_url: &str) -> DbPool {
+    let manager = ConnectionManager::<PgConnection>::new(database_url);
+    Pool::builder()
         .build(manager)
-        .expect("database URL should be valid path to SQLite DB file")
+        .expect("Failed to connect to database")
+}
+
+pub fn get_database_connection(
+    pool: &DbPool,
+) -> Result<PooledConnection<ConnectionManager<PgConnection>>, actix_web::Error> {
+    pool.get().map_err(|err| {
+        eprintln!("Failed to get database connection: {}", err);
+        ErrorInternalServerError("Internal Server Error")
+    })
 }

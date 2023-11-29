@@ -45,7 +45,7 @@ pub fn add_user(conn: &mut PgConnection, data: &CreateUser) -> Result<UserDetail
 /// # Parameters
 ///
 /// * `conn` - The database connection
-/// * `_email` - The email address of the user to find
+/// * `user_email` - The email address of the user to find
 ///
 /// # Returns
 ///
