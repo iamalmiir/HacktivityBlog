@@ -35,20 +35,36 @@ pub fn add_user(
     })
 }
 
-pub fn find_user_by_email(conn: &mut PgConnection, _email: &str) -> Result<UserDetails, DbError> {
+// pub fn find_user_by_email(conn: &mut PgConnection, _email: &str) -> Result<User, DbError> {
+//     use crate::schema::users::dsl::*;
+
+//     // Attempt to find the user by email
+//     match users.filter(email.eq(_email)).first::<User>(conn) {
+//         Ok(user) => Ok(User {
+//             id: user.id,
+//             full_name: user.full_name.to_owned(),
+//             email: user.email.to_owned(),
+//             password: user.password.to_owned(),
+//             created_at: user.created_at,
+//             updated_at: user.updated_at,
+//         }),
+//         // If the user doesn't exist, return a 404 error
+//         Err(diesel::result::Error::NotFound) => Err(Box::new(diesel::result::Error::NotFound)),
+//         Err(e) => Err(Box::new(e)), // Handle any other database error
+//     }
+// }
+pub fn find_user_by_email(conn: &mut PgConnection, email: &str) -> Result<User, DbError> {
     use crate::schema::users::dsl::*;
 
     // Attempt to find the user by email
-    match users.filter(email.eq(_email)).first::<User>(conn) {
-        Ok(user) => Ok(UserDetails {
-            full_name: user.full_name.to_owned(),
-            email: user.email.to_owned(),
-            password: user.password.to_owned(),
-            created_at: user.created_at,
-            updated_at: user.updated_at,
-        }),
-        // If the user doesn't exist, return a 404 error
-        Err(diesel::result::Error::NotFound) => Err(Box::new(diesel::result::Error::NotFound)),
-        Err(e) => Err(Box::new(e)), // Handle any other database error
-    }
+    let result = users.filter(email.eq(email)).first::<User>(conn)?;
+
+    Ok(User {
+        id: result.id,
+        full_name: result.full_name.to_owned(),
+        email: result.email.to_owned(),
+        password: result.password.to_owned(),
+        created_at: result.created_at,
+        updated_at: result.updated_at,
+    })
 }

@@ -18,6 +18,20 @@ pub struct User {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
+pub struct UserIdentity {
+    pub id: Uuid,
+    pub email: String,
+}
+
+#[derive(Deserialize, Debug, Serialize, Clone, Validate)]
+pub struct AuthCredentials {
+    #[validate(email)]
+    pub email: String,
+    #[validate(length(min = 8))]
+    pub password: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct UserDetails {
     pub full_name: String,
     pub email: String,
@@ -37,14 +51,6 @@ pub struct UserLoginData {
 pub struct CreateUser {
     #[validate(length(min = 1))]
     pub full_name: String,
-    #[validate(email)]
-    pub email: String,
-    #[validate(length(min = 8))]
-    pub password: String,
-}
-
-#[derive(Deserialize, Debug, Serialize, Clone, Validate)]
-pub struct LoginRequest {
     #[validate(email)]
     pub email: String,
     #[validate(length(min = 8))]
