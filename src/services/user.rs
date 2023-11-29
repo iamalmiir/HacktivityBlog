@@ -23,12 +23,15 @@ async fn create_user(
     let user: CreateUser = form.into_inner();
     match user.validate() {
         Ok(_) => {
-            // Check if the user already exists in the database
             if find_user_by_email(&mut conn, &user.email).is_ok() {
                 return Ok(error_response("User with this email already exists"));
             }
-            // Create the user in the database
-            let user_result = add_user(&mut conn, &user.full_name, &user.email, &user.password);
+            let new_user_data = CreateUser {
+                full_name: user.full_name.to_owned(),
+                email: user.email.to_owned(),
+                password: user.password.to_owned(),
+            };
+            let user_result = add_user(&mut conn, &new_user_data);
             match user_result {
                 Ok(user) => {
                     let json_response = UserResponse {
@@ -38,9 +41,9 @@ async fn create_user(
                     };
                     Ok(HttpResponse::Created().json(json_response))
                 }
-                Err(_) => Ok(error_response("User creation failed")),
+                Err(_) => Ok(HttpResponse::Forbidden().json("Error")),
             }
         }
-        Err(_) => Ok(error_response("Validation failed")),
+        Err(_) => Ok(HttpResponse::BadRequest().json("Bad request")),
     }
 }

@@ -17,7 +17,7 @@ pub struct User {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Deserialize, Debug, Serialize, Clone, Validate)]
 pub struct UserIdentity {
     pub id: Uuid,
     pub email: String,
@@ -47,7 +47,7 @@ pub struct UserLoginData {
     pub updated_at: NaiveDateTime,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Validate)]
+#[derive(Debug, Serialize, Deserialize, Validate)]
 pub struct CreateUser {
     #[validate(length(min = 1))]
     pub full_name: String,
