@@ -17,23 +17,29 @@ impl User {
     // # Returns
     //
     // A `UserDetails` struct containing the details of the newly created user, including their full name, email address, password, and creation and update timestamps
-    pub fn add_user(conn: &mut PgConnection, data: &CreateUser) -> Result<User, DbError> {
+    pub fn add_user(conn: &mut PgConnection, data: CreateUser) -> Result<String, DbError> {
         use crate::schema::users::dsl::*;
         let current_time = Utc::now().naive_utc();
-        let new_user = User {
-            id: uuid::Uuid::new_v4(),
-            full_name: data.full_name.to_owned(),
-            email: data.email.to_owned(),
-            password: hash(data.password.as_bytes(), DEFAULT_COST)?,
-            created_at: current_time,
-            updated_at: current_time,
-        };
-
         // Insert the new user into the database
-        diesel::insert_into(users).values(&new_user).execute(conn)?;
+        let new_user = diesel::insert_into(users)
+            .values(User {
+                id: uuid::Uuid::new_v4(),
+                full_name: data.full_name,
+                email: data.email,
+                password: hash(data.password.as_bytes(), DEFAULT_COST)?,
+                created_at: current_time,
+                updated_at: current_time,
+            })
+            .execute(conn)?;
 
-        // Return the new user
-        Ok(new_user)
+        if new_user == 1 {
+            Ok("OK".to_string())
+        } else {
+            Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Could not create user",
+            )))
+        }
     }
 
     // Find a user by their email address in the database

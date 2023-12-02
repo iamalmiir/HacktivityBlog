@@ -2,8 +2,7 @@ use crate::{
     models::user_model::{CreateUser, User},
     utils::helpers::{error_response, DbPool},
 };
-use actix_session::Session;
-use actix_web::{delete, post, web, HttpResponse, Responder, Result};
+use actix_web::{post, web, HttpResponse, Responder, Result};
 use serde_json::json;
 use validator::Validate;
 
@@ -26,12 +25,14 @@ async fn create_user(
             if User::find_user_by_email(&mut conn, &user.email).is_ok() {
                 return Ok(error_response("User with this email already exists"));
             }
-            let new_user_data = CreateUser {
-                full_name: user.full_name.to_owned(),
-                email: user.email.to_owned(),
-                password: user.password.to_owned(),
-            };
-            let user_result = User::add_user(&mut conn, &new_user_data);
+            let user_result = User::add_user(
+                &mut conn,
+                CreateUser {
+                    full_name: user.full_name.to_owned(),
+                    email: user.email.to_owned(),
+                    password: user.password.to_owned(),
+                },
+            );
             match user_result {
                 Ok(user) => Ok(HttpResponse::Created().json(json!({
                     "status": "success",
@@ -45,29 +46,29 @@ async fn create_user(
     }
 }
 
-#[delete("/user/me")]
-async fn update_user(pool: web::Data<DbPool>, session: Session) -> Result<impl Responder> {
-    let mut conn = pool.get().unwrap();
-    match user.validate() {
-        Ok(_) => {
-            if User::find_user_by_email(&mut conn, &user.email).is_ok() {
-                return Ok(error_response("User with this email already exists"));
-            }
-            let new_user_data = CreateUser {
-                full_name: user.full_name.to_owned(),
-                email: user.email.to_owned(),
-                password: user.password.to_owned(),
-            };
-            let user_result = User::add_user(&mut conn, &new_user_data);
-            match user_result {
-                Ok(user) => Ok(HttpResponse::Created().json(json!({
-                    "status": "success",
-                    "message": "User updated",
-                    "user": user,
-                }))),
-                Err(_) => Ok(HttpResponse::Forbidden().json("Error")),
-            }
-        }
-        Err(_) => Ok(HttpResponse::BadRequest().json("Bad request")),
-    }
-}
+// #[delete("/user/me")]
+// async fn update_user(pool: web::Data<DbPool>, session: Session) -> Result<impl Responder> {
+//     let mut conn = pool.get().unwrap();
+//     match user.validate() {
+//         Ok(_) => {
+//             if User::find_user_by_email(&mut conn, &user.email).is_ok() {
+//                 return Ok(error_response("User with this email already exists"));
+//             }
+//             let new_user_data = CreateUser {
+//                 full_name: user.full_name.to_owned(),
+//                 email: user.email.to_owned(),
+//                 password: user.password.to_owned(),
+//             };
+//             let user_result = User::add_user(&mut conn, &new_user_data);
+//             match user_result {
+//                 Ok(user) => Ok(HttpResponse::Created().json(json!({
+//                     "status": "success",
+//                     "message": "User updated",
+//                     "user": user,
+//                 }))),
+//                 Err(_) => Ok(HttpResponse::Forbidden().json("Error")),
+//             }
+//         }
+//         Err(_) => Ok(HttpResponse::BadRequest().json("Bad request")),
+//     }
+// }

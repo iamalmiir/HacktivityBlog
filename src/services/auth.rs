@@ -18,12 +18,12 @@ async fn login(
 
     let user_credentials = form.into_inner();
     if user_credentials.validate().is_ok() {
-        match Auth::credentials(&mut conn, user_credentials) {
+        match Auth::credentials(&mut conn, &user_credentials) {
             Ok(user) => {
                 let _ = session.insert("user_email", user);
                 Ok(HttpResponse::Ok().json(json!({ "status": "OK", "message": "User logged"})))
             }
-            Err(_) => Err(actix_web::error::ErrorUnauthorized("Unauthorized")),
+            Err(_) => Err(actix_web::error::ErrorUnauthorized("Unauthorized!")),
         }
     } else {
         Ok(HttpResponse::BadRequest().json("Invalid login credentials"))
