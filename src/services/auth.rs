@@ -1,5 +1,4 @@
 use crate::{
-    actors::user::find_user_by_email,
     models::user_model::{AuthCredentials, User},
     utils::{config::get_database_connection, helpers::DbPool},
 };
@@ -9,14 +8,16 @@ use bcrypt::verify;
 use serde_json::json;
 use validator::Validate;
 
-impl User {
-    fn authenticate(
+struct Auth {}
+
+impl Auth {
+    fn credentials(
         conn: &mut diesel::r2d2::PooledConnection<
             diesel::r2d2::ConnectionManager<diesel::PgConnection>,
         >,
         credentials: AuthCredentials,
     ) -> Result<String, HttpResponse> {
-        let user = find_user_by_email(conn, &credentials.email)
+        let user = User::find_user_by_email(conn, &credentials.email)
             .map_err(|_e| HttpResponse::Unauthorized().json("Unauthorized"))?;
 
         if verify(&credentials.password, &user.password).unwrap_or(false) {
@@ -35,9 +36,9 @@ async fn login(
 ) -> Result<impl Responder> {
     let mut conn = get_database_connection(&pool)?;
 
-    let login_req = form.into_inner();
-    if login_req.validate().is_ok() {
-        match User::authenticate(&mut conn, login_req) {
+    let user_credentials = form.into_inner();
+    if user_credentials.validate().is_ok() {
+        match Auth::credentials(&mut conn, user_credentials) {
             Ok(user) => {
                 let _ = session.insert("user_email", user);
                 Ok(HttpResponse::Ok().json(json!({ "status": "OK", "message": "User logged"})))
