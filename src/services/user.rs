@@ -1,9 +1,10 @@
 use crate::{
     models::user_model::{CreateUser, User},
-    response::UserResponse,
     utils::helpers::{error_response, DbPool},
 };
+use actix_session::Session;
 use actix_web::{delete, post, web, HttpResponse, Responder, Result};
+use serde_json::json;
 use validator::Validate;
 
 /// @api {post} /api/v1/user/create Create a new user
@@ -32,14 +33,11 @@ async fn create_user(
             };
             let user_result = User::add_user(&mut conn, &new_user_data);
             match user_result {
-                Ok(user) => {
-                    let json_response = UserResponse {
-                        status: "success".to_string(),
-                        message: "User created".to_string(),
-                        user,
-                    };
-                    Ok(HttpResponse::Created().json(json_response))
-                }
+                Ok(user) => Ok(HttpResponse::Created().json(json!({
+                    "status": "success",
+                    "message": "User created",
+                    "user": user,
+                }))),
                 Err(_) => Ok(HttpResponse::Forbidden().json("Error")),
             }
         }
@@ -48,12 +46,8 @@ async fn create_user(
 }
 
 #[delete("/user/me")]
-async fn update_user(
-    pool: web::Data<DbPool>,
-    form: web::Json<CreateUser>,
-) -> Result<impl Responder> {
+async fn update_user(pool: web::Data<DbPool>, session: Session) -> Result<impl Responder> {
     let mut conn = pool.get().unwrap();
-    let user: CreateUser = form.into_inner();
     match user.validate() {
         Ok(_) => {
             if User::find_user_by_email(&mut conn, &user.email).is_ok() {
@@ -66,14 +60,11 @@ async fn update_user(
             };
             let user_result = User::add_user(&mut conn, &new_user_data);
             match user_result {
-                Ok(user) => {
-                    let json_response = UserResponse {
-                        status: "success".to_string(),
-                        message: "User created".to_string(),
-                        user,
-                    };
-                    Ok(HttpResponse::Created().json(json_response))
-                }
+                Ok(user) => Ok(HttpResponse::Created().json(json!({
+                    "status": "success",
+                    "message": "User updated",
+                    "user": user,
+                }))),
                 Err(_) => Ok(HttpResponse::Forbidden().json("Error")),
             }
         }

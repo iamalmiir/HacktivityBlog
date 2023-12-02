@@ -1,32 +1,12 @@
 use crate::{
-    models::user_model::{AuthCredentials, User},
+    actors::auth::Auth,
+    models::user_model::AuthCredentials,
     utils::{config::get_database_connection, helpers::DbPool},
 };
 use actix_session::Session;
 use actix_web::{post, web, HttpResponse, Responder, Result};
-use bcrypt::verify;
 use serde_json::json;
 use validator::Validate;
-
-struct Auth {}
-
-impl Auth {
-    fn credentials(
-        conn: &mut diesel::r2d2::PooledConnection<
-            diesel::r2d2::ConnectionManager<diesel::PgConnection>,
-        >,
-        credentials: AuthCredentials,
-    ) -> Result<String, HttpResponse> {
-        let user = User::find_user_by_email(conn, &credentials.email)
-            .map_err(|_e| HttpResponse::Unauthorized().json("Unauthorized"))?;
-
-        if verify(&credentials.password, &user.password).unwrap_or(false) {
-            Ok(user.email)
-        } else {
-            Err(HttpResponse::Unauthorized().json("Unauthorized"))
-        }
-    }
-}
 
 #[post("/auth/login")]
 async fn login(
