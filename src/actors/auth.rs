@@ -1,3 +1,4 @@
+use actix_session::Session;
 use actix_web::HttpResponse;
 use bcrypt::verify;
 
@@ -19,6 +20,18 @@ impl Auth {
             Ok(user.email)
         } else {
             Err(HttpResponse::Unauthorized().json("Unauthorized"))
+        }
+    }
+
+    pub fn validate_session(session: &Session) -> Result<String, HttpResponse> {
+        let user_email: Option<String> = session.get("user_email").unwrap_or(None);
+
+        match user_email {
+            Some(email) => {
+                session.renew();
+                Ok(email)
+            }
+            None => Err(HttpResponse::Unauthorized().json("Unauthorized")),
         }
     }
 }
