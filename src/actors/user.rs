@@ -7,16 +7,16 @@ use diesel::prelude::*;
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
 impl User {
-    // Add a new user to the database
-    //
-    // # Parameters
-    //
-    // * `conn` - The database connection
-    // * `data` - The user data to create, including their full name, email address, and password
-    //
-    // # Returns
-    //
-    // A `UserDetails` struct containing the details of the newly created user, including their full name, email address, password, and creation and update timestamps
+    /// Add a new user to the database
+    ///
+    /// # Parameters
+    ///
+    /// * `conn` - The database connection
+    /// * `data` - The user data to create, including their full name, email address, and password
+    ///
+    /// # Returns
+    ///
+    /// A `UserDetails` struct containing the details of the newly created user, including their full name, email address, password, and creation and update timestamps
     pub fn add_user(conn: &mut PgConnection, data: CreateUser) -> Result<String, DbError> {
         use crate::schema::users::dsl::*;
         let current_time = Utc::now().naive_utc();
@@ -42,16 +42,16 @@ impl User {
         }
     }
 
-    // Find a user by their email address in the database
-    //
-    // # Parameters
-    //
-    // * `conn` - The database connection
-    // * `user_email` - The email address of the user to find
-    //
-    // # Returns
-    //
-    // A `User` struct if a user with the specified email address was found, or an error if not
+    /// Find a user by their email address in the database
+    ///
+    /// # Parameters
+    ///
+    /// * `conn` - The database connection
+    /// * `user_email` - The email address of the user to find
+    ///
+    /// # Returns
+    ///
+    /// A `User` struct if a user with the specified email address was found, or an error if not
     pub fn find_user_by_email(conn: &mut PgConnection, user_email: &str) -> Result<User, DbError> {
         use crate::schema::users::dsl::*;
 
@@ -73,14 +73,17 @@ impl User {
     /// A `String` containing the email address of the deleted user
     pub fn delete_user(conn: &mut PgConnection, user_email: &str) -> Result<String, DbError> {
         use crate::schema::users::dsl::*;
-
-        // Attempt to find the user by email
-        let result = users.filter(email.eq(user_email)).first::<User>(conn)?;
-
         // Delete the user from the database
-        diesel::delete(users.filter(email.eq(user_email))).execute(conn)?;
+        let user_deleted = diesel::delete(users.filter(email.eq(user_email))).execute(conn)?;
 
         // Return the email address of the deleted user
-        Ok(result.email)
+        if user_deleted == 0 {
+            Err(Box::new(std::io::Error::new(
+                std::io::ErrorKind::Other,
+                "Could not delete user",
+            )))
+        } else {
+            Ok("OK".to_string())
+        }
     }
 }
