@@ -3,6 +3,7 @@ use actix_web::Result;
 use bcrypt::{hash, DEFAULT_COST};
 use chrono::Utc;
 use diesel::prelude::*;
+use validator::Validate;
 
 type DbError = Box<dyn std::error::Error + Send + Sync>;
 
@@ -18,6 +19,8 @@ impl User {
     ///
     /// A `UserDetails` struct containing the details of the newly created user, including their full name, email address, password, and creation and update timestamps
     pub fn add_user(conn: &mut PgConnection, data: CreateUser) -> Result<String, DbError> {
+        data.validate()?;
+
         use crate::schema::users::dsl::*;
         let current_time = Utc::now().naive_utc();
         // Insert the new user into the database
@@ -77,13 +80,12 @@ impl User {
         let user_deleted = diesel::delete(users.filter(email.eq(user_email))).execute(conn)?;
 
         // Return the email address of the deleted user
-        if user_deleted == 0 {
-            Err(Box::new(std::io::Error::new(
+        match user_deleted {
+            0 => Err(Box::new(std::io::Error::new(
                 std::io::ErrorKind::Other,
                 "Could not delete user",
-            )))
-        } else {
-            Ok("OK".to_string())
+            ))),
+            _ => Ok(user_email.to_string()),
         }
     }
 }

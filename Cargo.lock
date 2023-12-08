@@ -1509,7 +1509,6 @@ dependencies = [
  "toml",
  "uuid",
  "validator",
- "validator_derive",
 ]
 
 [[package]]
